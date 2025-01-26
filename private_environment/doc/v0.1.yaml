@@ -1,0 +1,955 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Authentication API Documentation
+  description: Documentation for authentication endpoints
+tags:
+  - name: Auth
+    description: Endpoints related to user authentication
+  - name: Brand
+    description: Endpoints related to brand management
+  - name: Category
+    description: Endpoints related to category management
+  - name: Coupon
+    description: Endpoints related to coupon management
+  - name: Product
+    description: Endpoints related to product management
+  - name: Order
+    description: Endpoints related to Order Management
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: User login
+      description: Logs in a user with email and password
+      parameters:
+        - name: body
+          in: body
+          description: Email and password of the user
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        422:
+          description: Unprocessable Entity
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        403:
+          description: Forbidden
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        200:
+          description: OK
+
+  /auth/sign-up:
+    post:
+      tags:
+        - Auth
+      summary: User sign up
+      description: Registers a new user with full name, phone number, email, and password
+      parameters:
+        - name: body
+          in: body
+          required: true
+          description: Full name, phone number, email, and password of the user
+          schema:
+            type: object
+            properties:
+              fullName:
+                type: string
+              numberPhone:
+                type: string
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        422:
+          description: Unprocessable Entity
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+
+  /auth/sign-up/verify:
+    get:
+      tags:
+        - Auth
+      summary: Verify user sign-up
+      description: Verifies user sign-up with a verification token
+      parameters:
+        - name: t
+          in: query
+          description: Verification token
+          required: true
+          type: string
+      responses:
+        422:
+          description: Unprocessable Entity
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        201:
+          description: Created
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+
+  /auth/isloggedin:
+    get:
+      tags:
+        - Auth
+      summary: Check if user is logged in
+      description: Checks if user is logged in with a session cookie
+      parameters: []
+      responses:
+        403:
+          description: Forbidden
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        200:
+          description: OK
+
+  /auth/google:
+    get:
+      tags:
+        - Auth
+      summary: Initiate Google OAuth 2.0 authentication
+      description: Initiates Google OAuth 2.0 authentication flow
+      responses:
+        200:
+          description: OK
+
+  /auth/logout:
+    get:
+      tags:
+        - Auth
+      summary: User logout
+      description: Logs out the user and clears the session cookie
+      parameters: []
+      responses:
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        200:
+          description: OK
+  /api/brands:
+    get:
+      summary: Get brands
+      tags:
+        - Brand
+      description: Retrieves a list of brands
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          required: false
+          type: integer
+        - name: max_items
+          in: query
+          description: Maximum items per page
+          required: false
+          type: integer
+      responses:
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    description:
+                      type: string
+
+    post:
+      summary: Create brand
+      tags:
+        - Brand
+      description: Creates a new brand
+      parameters:
+        - name: body
+          in: body
+          description: Brand name and description
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+      responses:
+        201:
+          description: Created
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        422:
+          description: Unprocessable Entity
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+  /api/brands/{id}:
+    get:
+      summary: Get brand by ID
+      tags:
+        - Brand
+      description: Retrieves a brand by its ID
+      parameters:
+        - name: id
+          in: path
+          description: Brand ID
+          required: true
+          type: integer
+      responses:
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              description:
+                type: string
+
+    put:
+      summary: Update brand
+      tags:
+        - Brand
+      description: Updates a brand by its ID
+      parameters:
+        - name: id
+          in: path
+          description: Brand ID
+          required: true
+          type: integer
+        - name: body
+          in: body
+          description: New brand name and description
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+      responses:
+        200:
+          description: OK
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    delete:
+      summary: Delete brand
+      tags:
+        - Brand
+      description: Deletes a brand by its ID
+      parameters:
+        - name: id
+          in: path
+          description: Brand ID
+          required: true
+          type: integer
+      responses:
+        200:
+          description: OK
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+  /api/categories:
+    get:
+      summary: Get categories
+      tags:
+        - Category
+      description: Retrieves a list of categories
+      responses:
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    image_path:
+                      type: string
+                    image_url:
+                      type: string
+
+    post:
+      summary: Create category
+      tags:
+        - Category
+      description: Creates a new category
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: name
+          in: formData
+          description: Category name
+          required: true
+          type: string
+        - name: description
+          in: formData
+          description: Category description
+          required: true
+          type: string
+        - name: image
+          in: formData
+          description: Category image file
+          required: true
+          type: file
+      responses:
+        201:
+          description: Created
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+  /api/categories/{id}:
+    get:
+      summary: Get category by ID
+      tags:
+        - Category
+      description: Retrieves a category by its ID
+      parameters:
+        - name: id
+          in: path
+          description: Category ID
+          required: true
+          type: integer
+      responses:
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              description:
+                type: string
+              image_path:
+                type: string
+              image_url:
+                type: string
+
+    put:
+      summary: Update category
+      tags:
+        - Category
+      description: Updates a category by its ID
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: id
+          in: path
+          description: Category ID
+          required: true
+          type: integer
+        - name: name
+          in: formData
+          description: New category name
+          required: true
+          type: string
+        - name: description
+          in: formData
+          description: New category description
+          required: true
+          type: string
+        - name: image
+          in: formData
+          description: New category image file
+          required: true
+          type: file
+      responses:
+        200:
+          description: OK
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    delete:
+      summary: Delete category
+      tags:
+        - Category
+      description: Deletes a category by its ID
+      parameters:
+        - name: id
+          in: path
+          description: Category ID
+          required: true
+          type: integer
+      responses:
+        200:
+          description: OK
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+  /api/coupons/{id}:
+    get:
+      summary: Get coupon by ID
+      description: Retrieves a coupon by its ID
+      tags:
+        - Coupon
+      parameters:
+        - name: id
+          in: path
+          description: Coupon ID
+          required: true
+          type: integer
+      responses:
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        200:
+          description: OK
+    put:
+      summary: Update coupon
+      description: Updates a coupon by its ID
+      tags:
+        - Coupon
+      parameters:
+        - name: id
+          in: path
+          description: Coupon ID
+          required: true
+          type: integer
+        - name: body
+          in: body
+          description: Updated coupon details
+          required: true
+          schema:
+            type: object
+            properties:
+              couponCode:
+                type: string
+              percentage:
+                type: number
+              date_start:
+                type: string
+                format: date
+              date_end:
+                type: string
+                format: date
+              id_product:
+                type: integer
+      responses:
+        200:
+          description: OK
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    delete:
+      summary: Delete coupon
+      description: Deletes a coupon by its ID
+      tags:
+        - Coupon
+      parameters:
+        - name: id
+          in: path
+          description: Coupon ID
+          required: true
+          type: integer
+      responses:
+        200:
+          description: OK
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+  /api/coupons:
+    post:
+      summary: Create coupon
+      description: Creates a new coupon
+      tags:
+        - Coupon
+      parameters:
+        - name: body
+          in: body
+          description: Coupon details
+          required: true
+          schema:
+            type: object
+            properties:
+              couponCode:
+                type: string
+              type:
+                type: string
+                enum: ["product", "order"]
+              percentage:
+                type: number
+              date_start:
+                type: string
+                format: date
+              date_end:
+                type: string
+                format: date
+              id_product:
+                type: integer
+      responses:
+        201:
+          description: Created
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+  /api/products:
+    get:
+      summary: Get products
+      description: Retrieves products based on filtering criteria
+      tags:
+        - Product
+      parameters:
+        - name: priceMin
+          in: query
+          description: Minimum price
+          type: number
+        - name: priceMax
+          in: query
+          description: Maximum price
+          type: number
+        - name: categoryIds
+          in: query
+          description: Category IDs
+          type: array
+          items:
+            type: integer
+        - name: brandIds
+          in: query
+          description: Brand IDs
+          type: array
+          items:
+            type: integer
+        - name: page
+          in: query
+          description: Page number
+          type: integer
+        - name: max_items
+          in: query
+          description: Maximum items per page
+          type: integer
+      responses:
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    price:
+                      type: number
+                    priceBarre:
+                      type: number
+                    category_id:
+                      type: integer
+                    brand_id:
+                      type: integer
+                    product_type_id:
+                      type: integer
+                    image_path:
+                      type: string
+                    image_url:
+                      type: string
+
+    post:
+      summary: Create product
+      description: Creates a new product
+      tags:
+        - Product
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: name
+          in: formData
+          description: Product name
+          required: true
+          type: string
+        - name: description
+          in: formData
+          description: Product description
+          required: true
+          type: string
+        - name: price
+          in: formData
+          description: Product price
+          required: true
+          type: number
+        - name: priceBarre
+          in: formData
+          description: Product barre price
+          required: true
+          type: number
+        - name: category_id
+          in: formData
+          description: Category ID of the product
+          required: true
+          type: integer
+        - name: brand_id
+          in: formData
+          description: Brand ID of the product
+          required: true
+          type: integer
+        - name: product_type_id
+          in: formData
+          description: Product type ID
+          required: true
+          type: integer
+        - name: image
+          in: formData
+          description: Product image
+          required: false
+          type: file
+      responses:
+        201:
+          description: Created
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+  /api/products/{id}:
+    get:
+      summary: Get product by ID
+      description: Retrieves product details by its ID
+      tags:
+        - Product
+      parameters:
+        - name: id
+          in: path
+          description: Product ID
+          required: true
+          type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              description:
+                type: string
+              price:
+                type: number
+              priceBarre:
+                type: number
+              category_id:
+                type: integer
+              brand_id:
+                type: integer
+              product_type_id:
+                type: integer
+              image_path:
+                type: string
+              image_url:
+                type: string
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    put:
+      summary: Update product
+      description: Updates an existing product by its ID
+      tags:
+        - Product
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: id
+          in: path
+          description: Product ID
+          required: true
+          type: integer
+        - name: name
+          in: formData
+          description: Product name
+          required: true
+          type: string
+        - name: description
+          in: formData
+          description: Product description
+          required: true
+          type: string
+        - name: price
+          in: formData
+          description: Product price
+          required: true
+          type: number
+        - name: priceBarre
+          in: formData
+          description: Product barre price
+          required: true
+          type: number
+        - name: category_id
+          in: formData
+          description: Category ID of the product
+          required: true
+          type: integer
+        - name: brand_id
+          in: formData
+          description: Brand ID of the product
+          required: true
+          type: integer
+        - name: product_type_id
+          in: formData
+          description: Product type ID
+          required: true
+          type: integer
+        - name: image
+          in: formData
+          description: Product image
+          required: false
+          type: file
+      responses:
+        200:
+          description: OK
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    delete:
+      summary: Delete product
+      description: Deletes a product by its ID
+      tags:
+        - Product
+      parameters:
+        - name: id
+          in: path
+          description: Product ID
+          required: true
+          type: integer
+      responses:
+        200:
+          description: OK
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+  /api/orders:
+    post:
+      summary: Create Order
+      description: Creates a new order
+      tags:
+        - Order
+      parameters:
+        - name: body
+          in: body
+          description: Parameters for creating the order
+          required: true
+          schema:
+            type: object
+            properties:
+              couponCode:
+                type: optional_string
+              adresseOrder:
+                type: string
+              order_items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    quantity:
+                      type: integer
+                    id_product:
+                      type: integer
+      responses:
+        201:
+          description: Created
+          schema:
+            type: object
+            properties:
+              payment_link:
+                type: string
+        500:
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+definitions: {}
+
+# TODO: Mention The Third-party services used 
+# (Stripe, Cloudinary ect..)

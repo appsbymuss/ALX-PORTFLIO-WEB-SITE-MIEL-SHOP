@@ -1,0 +1,28 @@
+<html>
+    <head>
+        <script>
+            function googleConsent()
+            {
+                const URL = 'http://localhost:3000/auth/google';
+                const newWindow = window.open(
+                    URL,
+                    "_blank",
+                    "width=500, height=600"
+                )
+            }
+            function linkedinConsent()
+            {
+                const URL = 'http://localhost:3000/auth/linkedin';
+                const newWindow = window.open(
+                    URL,
+                    "_blank",
+                    "width=500, height=600"
+                )
+            }
+        </script>
+    </head>
+    <body>
+        <button onClick="googleConsent();">Sign in with Google</button>
+        <button onclick="linkedinConsent();">Sign in with LinkedIn</button>
+    </body>
+</html>

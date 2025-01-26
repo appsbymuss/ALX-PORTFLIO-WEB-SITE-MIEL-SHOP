@@ -1,0 +1,322 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:00112233@localhost:3306/mieldb"
+}
+
+model brand {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  description String?    @db.VarChar(250)
+  product     product[]
+}
+
+model category {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  description String?    @db.VarChar(250)
+  image_path  String?
+  image_url   String?
+  product     product[]
+}
+
+model order {
+  id         Int @id @default(autoincrement())
+  id_user    Int
+  id_address Int
+
+  status         order_status     @default(nonConfirme)
+  applied_coupon applied_coupon[]
+  user           user             @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_ibfk_1")
+  order_item     order_item[]
+  payment        payment?
+  delivery       delivery?
+  address        address          @relation(fields: [id_address], references: [id])
+  Facture        facture[]
+
+  createdAt DateTime @default(now())
+
+  @@index([id_user], map: "user_id")
+}
+
+model order_item {
+  id_order   Int
+  id_product Int
+  quantity   Int
+  order      order   @relation(fields: [id_order], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "order_item_ibfk_1")
+  product    product @relation(fields: [id_product], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "order_item_ibfk_2")
+
+  @@id([id_order, id_product])
+  @@index([id_product], map: "id_product")
+}
+
+model product {
+  id              Int             @id @default(autoincrement())
+  name            String          @db.VarChar(350)
+  description     String          @db.VarChar(6000)
+  price           Decimal         @db.Decimal(6, 2)
+  priceBarre      Decimal         @db.Decimal(6, 2)
+  category_id     Int
+  brand_id        Int
+  product_type_id Int
+
+  rating          Int
+  reviews         String? // BUG: Why is this even here
+  origin          String?
+  texture         String?
+  flavor          String?
+  benefits        String?
+  usage           String?
+  special_label   product_special_label @default(none) // "Most Sold" / "New" / or just "none"
+
+  weight          Int // in grams
+
+  image_path      String?
+  image_url       String?
+  coupon          coupon[]
+  order_item      order_item[]
+  category        category        @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "product_ibfk_1")
+  brand           brand           @relation(fields: [brand_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "product_ibfk_2")
+  product_type    product_type    @relation(fields: [product_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "product_ibfk_3")
+  stock_product   stock_product[]
+  FactureItem     factureitem[]
+
+  // B-Tree Index for String-search Optimization
+  @@index([name])
+
+  @@index([brand_id], map: "brand_id")
+  @@index([category_id], map: "category_id")
+  @@index([product_type_id], map: "product_type_id")
+}
+
+model product_type {
+  id             Int       @id @default(autoincrement())
+  name           String    @db.VarChar(150)
+  tva_percentage Decimal   @db.Decimal(5, 2)
+  product        product[]
+}
+
+model user {
+  id                     Int       @id @default(autoincrement())
+  firstName              String    @db.VarChar(150)
+  lastName               String    @db.VarChar(150)
+  numberPhone            String?   @db.VarChar(20)
+  // TODO: add other to gender
+  gender                 gender    @default(nonSpecifie)
+  // TODO: Forget Password Email
+  password               String    @db.VarChar(200)
+  role                   user_role @default(user)
+  email                  String    @unique
+  oauthId                String?   @unique
+  oauthProvider          String? // Google / LinkedIn etc...
+  // Verify new Account (User): [Non-OAuth]
+  verify_token           String?
+  verified_at            DateTime?
+  // Forget Password: // TODO: To implement
+  forget_password_token  String?
+  forget_password_maxAge DateTime?
+
+  modified_at DateTime? @db.Timestamp(0)
+  created_at  DateTime? @default(dbgenerated("(now())")) @db.Timestamp(0)
+
+  address address[]
+  order   order[]
+  payment payment[]
+  Facture facture[]
+}
+
+model stock {
+  id            Int             @id @default(autoincrement())
+  name          String          @db.VarChar(150)
+  created_at    DateTime?       @default(dbgenerated("(now())")) @db.Timestamp(0)
+  stock_product stock_product[]
+  FactureItem   factureitem[]
+}
+
+model stock_product {
+  id          Int       @id @default(autoincrement())
+  stock_id    Int
+  product_id  Int
+  quantity    Int       @default(0)
+  modified_at DateTime? @db.Timestamp(0)
+  created_at  DateTime? @default(dbgenerated("(now())")) @db.Timestamp(0)
+  stock       stock     @relation(fields: [stock_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "stock_product_ibfk_1")
+  product     product   @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "stock_product_ibfk_2")
+
+  @@unique([stock_id, product_id], map: "product_and_stock_id")
+  @@index([product_id], map: "product_id")
+}
+
+model address {
+  id                  Int      @id @default(autoincrement())
+  countryCode         String   @db.Char(2)
+  city                String   @db.VarChar(70)
+  province            String?  @db.VarChar(70)
+  postalCode          String   @db.VarChar(50)
+  streetAddress       String   @db.VarChar(400)
+  streetAddress2      String?  @db.VarChar(400)
+  provided_by_user_id Int?
+  created_at          DateTime @default(dbgenerated("(now())")) @db.Timestamp(0)
+  user                user?    @relation(fields: [provided_by_user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "address_ibfk_1")
+  order               order[]
+
+  @@index([provided_by_user_id], map: "provided_by_user_id")
+}
+
+model coupon {
+  id             Int              @id @default(autoincrement())
+  couponCode     String           @unique(map: "couponCode") @db.VarChar(50)
+  type           coupon_type
+  percentage     Int              @db.TinyInt
+  date_start     DateTime         @db.Date
+  date_end       DateTime         @db.Date
+  id_product     Int?
+  created_at     DateTime?        @default(dbgenerated("(now())")) @db.Timestamp(0)
+  applied_coupon applied_coupon[]
+  product        product?         @relation(fields: [id_product], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coupon_ibfk_2")
+
+  // TODO: Add check condition in SQL
+  // (If product then id_product obligatory)
+  @@index([id_product], map: "id_product")
+}
+
+model applied_coupon {
+  id         Int       @id @default(autoincrement())
+  id_coupon  Int
+  id_order   Int
+  created_at DateTime? @default(dbgenerated("(now())")) @db.Timestamp(0)
+  coupon     coupon    @relation(fields: [id_coupon], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applied_coupon_ibfk_1")
+  order      order     @relation(fields: [id_order], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applied_coupon_ibfk_2")
+
+  @@index([id_coupon], map: "id_coupon")
+  @@index([id_order], map: "id_order")
+}
+
+model payment {
+  paymentIntent String         @id
+  amountTotal   Int // In cents
+  currency      String
+  id_user       Int
+  id_order      Int            @unique
+  paymentStatus payment_status @default(paid) // paid / refunded
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  order order @relation(fields: [id_order], references: [id])
+  user  user  @relation(fields: [id_user], references: [id])
+}
+
+// TODO: Verify if Delivery schema is accurate
+model delivery {
+  id Int @id @default(autoincrement())
+  id_order Int @unique
+
+  ExpeditionNum String @unique
+
+  serviceProvider   String // "mondialrelay" "euroship..."
+  shippingMethod    ShippingMethods? // "DOMICILE"/"RELAY"/"AUTRE"
+  // TODO: Add a status column // "delivered" / "en route"
+  senderDetails     Json
+  recipientDetails  Json
+  additionalDetails Json?
+  createdAt     DateTime       @default(now())
+  // TODO: timestamps (created_at / modified_at)
+
+  order   order     @relation(fields: [id_order], references: [id])
+  Facture facture[]
+}
+
+model facture {
+  invoiceNumber       String       @id @unique
+  totalAmount         Decimal      @db.Decimal(10, 2)
+  paymentMethod       String
+  // Coupon Info
+  couponCode          String?      @db.VarChar(50)
+  couponCodeType      coupon_type?
+  couponCodeProductId Int?         // If the coupon was Product-based
+  couponRate          Decimal?     @db.Decimal(5, 2)
+  // Shipping
+  shippingExpenses    Decimal      @db.Decimal(10, 2)
+  order_id            Int
+  user_id             Int
+  delivery_id         Int
+  createdAt           DateTime     @default(now())
+
+  order    order     @relation(fields: [order_id], references: [id])
+  user     user      @relation(fields: [user_id], references: [id])
+  delivery delivery? @relation(fields: [delivery_id], references: [id])
+
+  FactureItem factureitem[]
+
+  @@index([order_id], map: "order_id")
+  @@index([user_id], map: "user_id")
+  @@index([delivery_id], map: "delivery_id")
+}
+
+model factureitem {
+  id                 Int     @id @default(autoincrement())
+  productDescription String? @db.VarChar(6000)
+  facture_id         String
+  product_id         Int?
+  stock_id           Int?
+  quantity           Int
+  unitPrice          Decimal @db.Decimal(10, 2)
+  tvaRate            Decimal @db.Decimal(5, 2)
+  tvaTotal           Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+
+  facture facture @relation(fields: [facture_id], references: [invoiceNumber], onDelete: Cascade)
+  product product? @relation(fields: [product_id], references: [id])
+  stock   stock?   @relation(fields: [stock_id], references: [id])
+
+  @@unique([facture_id, product_id], map: "unique_facture_product")
+  @@index([product_id], map: "product_id")
+}
+
+enum product_special_label {
+  none
+  most_sold
+  new
+}
+
+enum payment_status {
+  paid
+  refunded
+}
+
+enum gender {
+  M
+  F
+  autre
+  nonSpecifie
+}
+
+enum coupon_type {
+  product
+  order
+}
+
+enum user_role {
+  user
+  admin
+}
+
+enum order_status {
+  nonConfirme // Non-confirmed
+  payee // Paid
+  processing // Processing: printing etiquette for shipping etc...
+  shipped // Shipping confirmed + initiated
+  livree // if Delivered
+  annulee // if the order was Cancelled
+}
+
+enum ShippingMethods {
+  DOMICILE
+  RELAY
+  AUTRE
+}

@@ -1,0 +1,53 @@
+{
+  "name": "honey-e-commerce",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx tsc && node ./utils/misc/url_patch_replace.js",
+    "start": "nodemon --env-file=.env.development",
+    "start:prod": "pm2 start ecosystem.config.js",
+    "stop": "pm2 stop mielshop ecosystem.config.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.15.1",
+    "chalk": "^3.0.0",
+    "cloudinary": "^2.0.1",
+    "convert-units": "^2.3.4",
+    "cookie-parser": "^1.4.6",
+    "cookie-session": "^2.1.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.18.0",
+    "express-validator": "^7.0.1",
+    "express-winston": "^4.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "libreoffice-convert": "^1.5.1",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.11",
+    "passport": "^0.7.0",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-instagram": "^1.0.0",
+    "passport-linkedin-oauth2": "^2.0.0",
+    "prisma": "^5.15.1",
+    "soap": "^1.0.0",
+    "socket.io": "^4.7.5",
+    "stripe": "^14.21.0",
+    "web-push": "^3.6.7",
+    "winston": "^3.13.0",
+    "xlsx-populate": "^1.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.7",
+    "nodemon": "^3.1.0",
+    "typescript": "^5.5.2"
+  }
+}
