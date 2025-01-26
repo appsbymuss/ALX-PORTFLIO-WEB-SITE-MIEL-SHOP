@@ -1,0 +1,2 @@
+minHeight/minWidth: 100vh (check it out, very useful)
+"rfce" shortwriting (extension of VSCode)
